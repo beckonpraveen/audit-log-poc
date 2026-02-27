@@ -1,0 +1,232 @@
+{
+  "info": {
+    "_postman_id": "1f4fdd5f-27f6-4a4e-a72a-9b9ece7890f0",
+    "name": "Helpdesk POC API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Create User",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "users"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.id) {",
+              "  pm.collectionVariables.set('userId', jsonData.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Unable to log in\",\n  \"description\": \"User cannot log in after password reset.\",\n  \"userId\": {{userId}},\n  \"status\": \"OPEN\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tickets"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.id) {",
+              "  pm.collectionVariables.set('ticketId', jsonData.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Update Ticket",
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Unable to log in - escalated\",\n  \"description\": \"Issue escalated to L2 support team.\",\n  \"userId\": {{userId}},\n  \"status\": \"IN_PROGRESS\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            "{{ticketId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Add Ticket Comment",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"commentText\": \"Investigating auth service logs now.\",\n  \"createdBy\": \"support.agent\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/comments",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            "{{ticketId}}",
+            "comments"
+          ]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.comments && jsonData.comments.length > 0) {",
+              "  var last = jsonData.comments[jsonData.comments.length - 1];",
+              "  if (last.id) pm.collectionVariables.set('commentId', last.id);",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Delete Ticket Comment",
+      "request": {
+        "method": "DELETE",
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/comments/{{commentId}}",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            "{{ticketId}}",
+            "comments",
+            "{{commentId}}"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Ticket Audit Logs",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/audit-logs",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "api",
+            "tickets",
+            "{{ticketId}}",
+            "audit-logs"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "userId",
+      "value": "1"
+    },
+    {
+      "key": "ticketId",
+      "value": "1"
+    },
+    {
+      "key": "commentId",
+      "value": "1"
+    }
+  ]
+}
