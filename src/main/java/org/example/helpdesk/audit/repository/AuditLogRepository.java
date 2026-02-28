@@ -1,5 +1,6 @@
 package org.example.helpdesk.audit.repository;
 
+import java.util.Collection;
 import java.util.List;
 import org.example.helpdesk.audit.entity.AuditLogRecord;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -17,4 +18,8 @@ public interface AuditLogRepository extends JpaRepository<AuditLogRecord, Long> 
             @Param("entityName") String entityName,
             @Param("ticketId") String ticketId
     );
+
+    List<AuditLogRecord> findByEntityNameIn(Collection<String> entityNames);
+
+    List<AuditLogRecord> findByEntityName(String entityName);
 }

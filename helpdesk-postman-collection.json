@@ -6,14 +6,76 @@
   },
   "item": [
     {
+      "name": "Auth Register",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"agent1\",\n  \"email\": \"agent1@example.com\",\n  \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/register",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "register"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.accessToken) pm.collectionVariables.set('accessToken', jsonData.accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Auth Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"agent1\",\n  \"password\": \"Password123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "login"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 200', function () { pm.response.to.have.status(200); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.accessToken) pm.collectionVariables.set('accessToken', jsonData.accessToken);"
+            ]
+          }
+        }
+      ]
+    },
+    {
       "name": "Create User",
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
@@ -21,13 +83,8 @@
         },
         "url": {
           "raw": "{{baseUrl}}/api/users",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "users"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "users"]
         }
       },
       "response": [],
@@ -37,42 +94,30 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Status is 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});",
-              "",
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
               "var jsonData = pm.response.json();",
-              "if (jsonData && jsonData.id) {",
-              "  pm.collectionVariables.set('userId', jsonData.id);",
-              "}"
+              "if (jsonData && jsonData.id) pm.collectionVariables.set('userId', jsonData.id);"
             ]
           }
         }
       ]
     },
     {
-      "name": "Create Ticket",
+      "name": "Create Priority",
       "request": {
         "method": "POST",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Unable to log in\",\n  \"description\": \"User cannot log in after password reset.\",\n  \"userId\": {{userId}},\n  \"status\": \"OPEN\"\n}"
+          "raw": "{\n  \"name\": \"High\",\n  \"description\": \"High priority\",\n  \"active\": true\n}"
         },
         "url": {
-          "raw": "{{baseUrl}}/api/tickets",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tickets"
-          ]
+          "raw": "{{baseUrl}}/api/priorities",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "priorities"]
         }
       },
       "response": [],
@@ -82,14 +127,123 @@
           "script": {
             "type": "text/javascript",
             "exec": [
-              "pm.test('Status is 201', function () {",
-              "  pm.response.to.have.status(201);",
-              "});",
-              "",
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
               "var jsonData = pm.response.json();",
-              "if (jsonData && jsonData.id) {",
-              "  pm.collectionVariables.set('ticketId', jsonData.id);",
-              "}"
+              "if (jsonData && jsonData.id) pm.collectionVariables.set('priorityId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create Impact",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"High\",\n  \"description\": \"High business impact\",\n  \"active\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/impacts",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "impacts"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.id) pm.collectionVariables.set('impactId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Create SLA Rule",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"High Priority SLA\",\n  \"description\": \"SLA for high priority tickets\",\n  \"priorityId\": {{priorityId}},\n  \"responseTimeMinutes\": 30,\n  \"resolutionTimeMinutes\": 240,\n  \"sortOrder\": 10,\n  \"active\": true\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/sla-rules",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sla-rules"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.id) pm.collectionVariables.set('slaRuleId', jsonData.id);"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "List SLA Rules",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/sla-rules",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "sla-rules"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create Ticket",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"title\": \"Unable to log in\",\n  \"description\": \"User cannot log in after password reset.\",\n  \"userId\": {{userId}},\n  \"priorityId\": {{priorityId}},\n  \"impactId\": {{impactId}},\n  \"status\": \"OPEN\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/tickets",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tickets"]
+        }
+      },
+      "response": [],
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('Status is 201', function () { pm.response.to.have.status(201); });",
+              "var jsonData = pm.response.json();",
+              "if (jsonData && jsonData.id) pm.collectionVariables.set('ticketId', jsonData.id);"
             ]
           }
         }
@@ -100,93 +254,32 @@
       "request": {
         "method": "PUT",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" },
+          { "key": "Content-Type", "value": "application/json" }
         ],
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"title\": \"Unable to log in - escalated\",\n  \"description\": \"Issue escalated to L2 support team.\",\n  \"userId\": {{userId}},\n  \"status\": \"IN_PROGRESS\"\n}"
+          "raw": "{\n  \"title\": \"Unable to log in - escalated\",\n  \"description\": \"Issue escalated to L2 support team.\",\n  \"userId\": {{userId}},\n  \"priorityId\": {{priorityId}},\n  \"impactId\": {{impactId}},\n  \"status\": \"IN_PROGRESS\"\n}"
         },
         "url": {
           "raw": "{{baseUrl}}/api/tickets/{{ticketId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            "{{ticketId}}"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tickets", "{{ticketId}}"]
         }
       },
       "response": []
     },
     {
-      "name": "Add Ticket Comment",
+      "name": "Get Ticket By Id",
       "request": {
-        "method": "POST",
+        "method": "GET",
         "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
         ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"commentText\": \"Investigating auth service logs now.\",\n  \"createdBy\": \"support.agent\"\n}"
-        },
         "url": {
-          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/comments",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            "{{ticketId}}",
-            "comments"
-          ]
-        }
-      },
-      "response": [],
-      "event": [
-        {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('Status is 200', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "",
-              "var jsonData = pm.response.json();",
-              "if (jsonData && jsonData.comments && jsonData.comments.length > 0) {",
-              "  var last = jsonData.comments[jsonData.comments.length - 1];",
-              "  if (last.id) pm.collectionVariables.set('commentId', last.id);",
-              "}"
-            ]
-          }
-        }
-      ]
-    },
-    {
-      "name": "Delete Ticket Comment",
-      "request": {
-        "method": "DELETE",
-        "url": {
-          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/comments/{{commentId}}",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            "{{ticketId}}",
-            "comments",
-            "{{commentId}}"
-          ]
+          "raw": "{{baseUrl}}/api/tickets/{{ticketId}}",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tickets", "{{ticketId}}"]
         }
       },
       "response": []
@@ -195,38 +288,40 @@
       "name": "Get Ticket Audit Logs",
       "request": {
         "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
         "url": {
           "raw": "{{baseUrl}}/api/tickets/{{ticketId}}/audit-logs",
-          "host": [
-            "{{baseUrl}}"
-          ],
-          "path": [
-            "api",
-            "tickets",
-            "{{ticketId}}",
-            "audit-logs"
-          ]
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "tickets", "{{ticketId}}", "audit-logs"]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get Admin Audit Logs",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{accessToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/admin/audit-logs",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "admin", "audit-logs"]
         }
       },
       "response": []
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "userId",
-      "value": "1"
-    },
-    {
-      "key": "ticketId",
-      "value": "1"
-    },
-    {
-      "key": "commentId",
-      "value": "1"
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "accessToken", "value": "" },
+    { "key": "userId", "value": "1" },
+    { "key": "priorityId", "value": "1" },
+    { "key": "impactId", "value": "1" },
+    { "key": "slaRuleId", "value": "1" },
+    { "key": "ticketId", "value": "1" }
   ]
 }

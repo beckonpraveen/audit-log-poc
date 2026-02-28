@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
 import java.util.Comparator;
 import java.util.List;
+import org.example.helpdesk.audit.AdminAuditEntityRegistry;
 import org.example.helpdesk.audit.dto.AuditLogResponse;
 import org.example.helpdesk.audit.entity.AuditLogRecord;
 import org.example.helpdesk.audit.repository.AuditLogRepository;
@@ -21,15 +22,18 @@ public class AuditLogServiceImpl implements AuditLogService {
     private static final String TICKET_ENTITY = "Ticket";
     private final AuditLogRepository auditLogRepository;
     private final TicketRepository ticketRepository;
+    private final AdminAuditEntityRegistry adminAuditEntityRegistry;
     private final ObjectMapper objectMapper;
 
     public AuditLogServiceImpl(
             AuditLogRepository auditLogRepository,
             TicketRepository ticketRepository,
+            AdminAuditEntityRegistry adminAuditEntityRegistry,
             ObjectMapper objectMapper
     ) {
         this.auditLogRepository = auditLogRepository;
         this.ticketRepository = ticketRepository;
+        this.adminAuditEntityRegistry = adminAuditEntityRegistry;
         this.objectMapper = objectMapper;
     }
 
@@ -44,6 +48,24 @@ public class AuditLogServiceImpl implements AuditLogService {
 
         return result.stream()
                 .sorted(Comparator.comparing(AuditLogRecord::getChangedAt).thenComparing(AuditLogRecord::getId))
+                .map(this::toResponse)
+                .toList();
+    }
+
+    @Override
+    public List<AuditLogResponse> findAdminAuditLogs(String entityName) {
+        List<AuditLogRecord> records;
+        if (entityName == null || entityName.isBlank()) {
+            records = auditLogRepository.findByEntityNameIn(adminAuditEntityRegistry.getAdminEntityNames());
+        } else {
+            if (!adminAuditEntityRegistry.isAdminEntityName(entityName)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Unsupported admin entity: " + entityName);
+            }
+            records = auditLogRepository.findByEntityName(entityName);
+        }
+
+        return records.stream()
+                .sorted(Comparator.comparing(AuditLogRecord::getChangedAt).reversed().thenComparing(AuditLogRecord::getId).reversed())
                 .map(this::toResponse)
                 .toList();
     }

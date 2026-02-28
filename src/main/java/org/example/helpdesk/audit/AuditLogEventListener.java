@@ -5,9 +5,13 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.example.helpdesk.entity.Impact;
+import org.example.helpdesk.entity.Priority;
+import org.example.helpdesk.entity.SlaRule;
 import org.example.helpdesk.entity.Ticket;
 import org.example.helpdesk.entity.TicketComment;
 import org.example.helpdesk.entity.User;
+import org.example.helpdesk.security.AuditActorProvider;
 import org.hibernate.event.spi.PostDeleteEvent;
 import org.hibernate.event.spi.PostDeleteEventListener;
 import org.hibernate.event.spi.PostInsertEvent;
@@ -24,13 +28,18 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
     private static final Set<String> AUDITED_ENTITIES = Set.of(
             User.class.getName(),
             Ticket.class.getName(),
-            TicketComment.class.getName()
+            TicketComment.class.getName(),
+            Priority.class.getName(),
+            Impact.class.getName(),
+            SlaRule.class.getName()
     );
 
     private final AuditLogWriter auditLogWriter;
+    private final AuditActorProvider auditActorProvider;
 
-    public AuditLogEventListener(AuditLogWriter auditLogWriter) {
+    public AuditLogEventListener(AuditLogWriter auditLogWriter, AuditActorProvider auditActorProvider) {
         this.auditLogWriter = auditLogWriter;
+        this.auditActorProvider = auditActorProvider;
     }
 
     @Override
@@ -46,7 +55,7 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
                 parentRef.name(),
                 parentRef.id(),
                 AuditOperation.CREATE,
-                "SYSTEM",
+                auditActorProvider.getCurrentActor(),
                 after
         );
     }
@@ -73,7 +82,7 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
                 parentRef.name(),
                 parentRef.id(),
                 AuditOperation.UPDATE,
-                "SYSTEM",
+                auditActorProvider.getCurrentActor(),
                 changes
         );
     }
@@ -91,7 +100,7 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
                 parentRef.name(),
                 parentRef.id(),
                 AuditOperation.DELETE,
-                "SYSTEM",
+                auditActorProvider.getCurrentActor(),
                 before
         );
     }
@@ -154,6 +163,9 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
         if ("user".equals(propertyName)) {
             return normalizeUserReference(value);
         }
+        if ("priority".equals(propertyName) || "impact".equals(propertyName) || "slaRule".equals(propertyName)) {
+            return normalizeNamedReference(value);
+        }
         if ("ticket".equals(propertyName)) {
             Object nestedId = extractNestedEntityId(value);
             return nestedId != null ? nestedId : value;
@@ -195,6 +207,21 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
         return userRef;
     }
 
+    private Object normalizeNamedReference(Object value) {
+        Long id = extractLongId(value);
+        if (id == null) {
+            return normalizeGeneric(value);
+        }
+
+        String name = extractEntityName(value);
+        Map<String, Object> ref = new LinkedHashMap<>();
+        ref.put("id", id);
+        if (name != null && !name.isBlank()) {
+            ref.put("name", name);
+        }
+        return ref;
+    }
+
     private Long extractLongId(Object value) {
         Object id = value instanceof HibernateProxy proxy
                 ? proxy.getHibernateLazyInitializer().getIdentifier()
@@ -216,6 +243,10 @@ public class AuditLogEventListener implements PostInsertEventListener, PostUpdat
         if (value instanceof User user) {
             return user.getName();
         }
+        return extractEntityName(value);
+    }
+
+    private String extractEntityName(Object value) {
         try {
             Method nameMethod = value.getClass().getMethod("getName");
             Object name = nameMethod.invoke(value);

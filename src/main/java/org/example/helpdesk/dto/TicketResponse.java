@@ -11,6 +11,12 @@ public class TicketResponse {
     private TicketStatus status;
     private Long userId;
     private String userName;
+    private Long priorityId;
+    private String priorityName;
+    private Long impactId;
+    private String impactName;
+    private Long slaRuleId;
+    private String slaRuleName;
     private List<TicketCommentResponse> comments;
 
     public Long getId() {
@@ -59,6 +65,54 @@ public class TicketResponse {
 
     public void setUserName(String userName) {
         this.userName = userName;
+    }
+
+    public Long getPriorityId() {
+        return priorityId;
+    }
+
+    public void setPriorityId(Long priorityId) {
+        this.priorityId = priorityId;
+    }
+
+    public String getPriorityName() {
+        return priorityName;
+    }
+
+    public void setPriorityName(String priorityName) {
+        this.priorityName = priorityName;
+    }
+
+    public Long getImpactId() {
+        return impactId;
+    }
+
+    public void setImpactId(Long impactId) {
+        this.impactId = impactId;
+    }
+
+    public String getImpactName() {
+        return impactName;
+    }
+
+    public void setImpactName(String impactName) {
+        this.impactName = impactName;
+    }
+
+    public Long getSlaRuleId() {
+        return slaRuleId;
+    }
+
+    public void setSlaRuleId(Long slaRuleId) {
+        this.slaRuleId = slaRuleId;
+    }
+
+    public String getSlaRuleName() {
+        return slaRuleName;
+    }
+
+    public void setSlaRuleName(String slaRuleName) {
+        this.slaRuleName = slaRuleName;
     }
 
     public List<TicketCommentResponse> getComments() {

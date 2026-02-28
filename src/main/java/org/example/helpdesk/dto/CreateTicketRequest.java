@@ -15,6 +15,10 @@ public class CreateTicketRequest {
     @NotNull
     private Long userId;
 
+    private Long priorityId;
+
+    private Long impactId;
+
     private TicketStatus status;
 
     public String getTitle() {
@@ -39,6 +43,22 @@ public class CreateTicketRequest {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getPriorityId() {
+        return priorityId;
+    }
+
+    public void setPriorityId(Long priorityId) {
+        this.priorityId = priorityId;
+    }
+
+    public Long getImpactId() {
+        return impactId;
+    }
+
+    public void setImpactId(Long impactId) {
+        this.impactId = impactId;
     }
 
     public TicketStatus getStatus() {

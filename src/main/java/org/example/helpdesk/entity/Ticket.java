@@ -37,6 +37,18 @@ public class Ticket {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "priority_id")
+    private Priority priority;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "impact_id")
+    private Impact impact;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "sla_rule_id")
+    private SlaRule slaRule;
+
     @OneToMany(mappedBy = "ticket", cascade = jakarta.persistence.CascadeType.ALL, orphanRemoval = true)
     private List<TicketComment> comments = new ArrayList<>();
 
@@ -86,6 +98,30 @@ public class Ticket {
 
     public void setComments(List<TicketComment> comments) {
         this.comments = comments;
+    }
+
+    public Priority getPriority() {
+        return priority;
+    }
+
+    public void setPriority(Priority priority) {
+        this.priority = priority;
+    }
+
+    public Impact getImpact() {
+        return impact;
+    }
+
+    public void setImpact(Impact impact) {
+        this.impact = impact;
+    }
+
+    public SlaRule getSlaRule() {
+        return slaRule;
+    }
+
+    public void setSlaRule(SlaRule slaRule) {
+        this.slaRule = slaRule;
     }
 
     public void addComment(TicketComment comment) {

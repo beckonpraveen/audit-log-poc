@@ -8,8 +8,60 @@ CREATE TABLE IF NOT EXISTS users (
   id BIGINT NOT NULL AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
   email VARCHAR(255) NOT NULL,
+  username VARCHAR(255) NULL,
+  password_hash VARCHAR(255) NULL,
   PRIMARY KEY (id),
-  UNIQUE KEY uk_users_email (email)
+  UNIQUE KEY uk_users_email (email),
+  UNIQUE KEY uk_users_username (username)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS user_roles (
+  user_id BIGINT NOT NULL,
+  role VARCHAR(50) NOT NULL,
+  PRIMARY KEY (user_id, role),
+  CONSTRAINT fk_user_roles_user
+    FOREIGN KEY (user_id)
+    REFERENCES users (id)
+    ON UPDATE RESTRICT
+    ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS priorities (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(1000) NULL,
+  active BIT(1) NOT NULL DEFAULT b'1',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_priorities_name (name)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS impacts (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(1000) NULL,
+  active BIT(1) NOT NULL DEFAULT b'1',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_impacts_name (name)
+) ENGINE=InnoDB;
+
+CREATE TABLE IF NOT EXISTS sla_rules (
+  id BIGINT NOT NULL AUTO_INCREMENT,
+  name VARCHAR(255) NOT NULL,
+  description VARCHAR(1000) NULL,
+  priority_id BIGINT NOT NULL,
+  response_time_minutes INT NOT NULL,
+  resolution_time_minutes INT NOT NULL,
+  sort_order INT NOT NULL DEFAULT 100,
+  active BIT(1) NOT NULL DEFAULT b'1',
+  PRIMARY KEY (id),
+  UNIQUE KEY uk_sla_rules_name (name),
+  KEY idx_sla_rules_priority_id (priority_id),
+  KEY idx_sla_rules_active_order (active, sort_order, id),
+  CONSTRAINT fk_sla_rules_priority
+    FOREIGN KEY (priority_id)
+    REFERENCES priorities (id)
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS tickets (
@@ -18,11 +70,32 @@ CREATE TABLE IF NOT EXISTS tickets (
   description VARCHAR(2000) NOT NULL,
   status VARCHAR(20) NOT NULL DEFAULT 'OPEN',
   user_id BIGINT NOT NULL,
+  priority_id BIGINT NULL,
+  impact_id BIGINT NULL,
+  sla_rule_id BIGINT NULL,
   PRIMARY KEY (id),
   KEY idx_tickets_user_id (user_id),
+  KEY idx_tickets_priority_id (priority_id),
+  KEY idx_tickets_impact_id (impact_id),
+  KEY idx_tickets_sla_rule_id (sla_rule_id),
   CONSTRAINT fk_tickets_user_id
     FOREIGN KEY (user_id)
     REFERENCES users (id)
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_tickets_priority_id
+    FOREIGN KEY (priority_id)
+    REFERENCES priorities (id)
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_tickets_impact_id
+    FOREIGN KEY (impact_id)
+    REFERENCES impacts (id)
+    ON UPDATE RESTRICT
+    ON DELETE RESTRICT,
+  CONSTRAINT fk_tickets_sla_rule_id
+    FOREIGN KEY (sla_rule_id)
+    REFERENCES sla_rules (id)
     ON UPDATE RESTRICT
     ON DELETE RESTRICT,
   CONSTRAINT chk_tickets_status

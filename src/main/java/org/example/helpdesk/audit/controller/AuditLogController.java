@@ -6,10 +6,10 @@ import org.example.helpdesk.audit.service.AuditLogService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/api/tickets")
 public class AuditLogController {
 
     private final AuditLogService auditLogService;
@@ -18,8 +18,13 @@ public class AuditLogController {
         this.auditLogService = auditLogService;
     }
 
-    @GetMapping("/{ticketId}/audit-logs")
+    @GetMapping("/api/tickets/{ticketId}/audit-logs")
     public List<AuditLogResponse> findByTicketId(@PathVariable Long ticketId) {
         return auditLogService.findByTicketId(ticketId);
+    }
+
+    @GetMapping("/api/admin/audit-logs")
+    public List<AuditLogResponse> findAdminAuditLogs(@RequestParam(required = false) String entityName) {
+        return auditLogService.findAdminAuditLogs(entityName);
     }
 }

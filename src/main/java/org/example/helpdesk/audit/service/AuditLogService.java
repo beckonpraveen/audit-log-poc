@@ -5,4 +5,6 @@ import org.example.helpdesk.audit.dto.AuditLogResponse;
 
 public interface AuditLogService {
     List<AuditLogResponse> findByTicketId(Long ticketId);
+
+    List<AuditLogResponse> findAdminAuditLogs(String entityName);
 }
